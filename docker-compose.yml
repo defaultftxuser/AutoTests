@@ -1,0 +1,8 @@
+services:
+  tests:
+    build: .
+    volumes:
+      - ./allure-results:/tests/allure-results
+    environment:
+      - PYTHONUNBUFFERED=1
+    network_mode: "host"
