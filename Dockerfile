@@ -1,18 +1,14 @@
-FROM python:3.10-slim
+FROM python:3.12-bookworm
 
-RUN apt-get update && apt-get install -y \
-    curl \
-    unzip \
-    && rm -rf /var/lib/apt/lists/*
+RUN curl -Ls https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.32.0/allure-commandline-2.32.0.tgz | \
+    tar -xz -C /opt/ && \
+    ln -s /opt/allure-2.32.0/bin/allure /usr/bin/allure
 
-RUN pip install --no-cache-dir playwright pytest pytest-asyncio allure-pytest \
-    && playwright install --with-deps
+WORKDIR /usr/workspace
 
-WORKDIR /tests
+COPY ./requirements.txt /usr/workspace
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-COPY . .
-
-CMD ["pytest", "--alluredir=/tests/allure-results", "--video=on", "--capture=sys", "--headless"]
+RUN playwright install --with-deps

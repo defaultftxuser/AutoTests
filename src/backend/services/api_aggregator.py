@@ -1,7 +1,7 @@
 from src.backend.services.chat_api import ChatAPI
 
 
-class BaseTest:
+class APIAggregator:
 
-    def setup_method(self):
+    def __init__(self):
         self.chat_api = ChatAPI()

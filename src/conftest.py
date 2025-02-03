@@ -1,26 +1,11 @@
-import allure
+import datetime
+
 import pytest
 from faker import Faker
-from playwright.async_api import async_playwright
+from playwright.async_api import async_playwright,  Browser,  Page
 
-
-@pytest.fixture(scope="session")
-def faker():
-    return Faker()
-
-
-@pytest.fixture(scope="session")
-def get_menu_payload():
-    return {
-        "id": Faker().uuid4(),
-        "ts": 0,
-        "text": "меню"
-    }
-
-
-@pytest.fixture(scope="session")
-def get_session_id():
-    return Faker().uuid4()
+from src.backend.services.api_aggregator import APIAggregator
+from src.backend.services.schemas.chat_schemas import CreateMessageSchema
 
 
 @pytest.fixture(scope="function")
@@ -28,30 +13,41 @@ def get_faker() -> Faker:
     return Faker()
 
 
-@pytest.mark.parametrize("browser_name", ["chromium", "firefox", "webkit"])
-@pytest.fixture(scope="function", autouse=True)
-async def page_with_video(request, browser_name) -> tuple:
+@pytest.fixture(scope="function")
+def get_session_id(request: pytest.FixtureRequest, get_faker: Faker) -> str:
+    return request.param if hasattr(request, "param") else get_faker.uuid4()
+
+
+@pytest.fixture(scope="function")
+def get_chat_message_payload(request: pytest.FixtureRequest, get_faker: Faker) -> CreateMessageSchema:
+    if hasattr(request, "param") and isinstance(request.param, CreateMessageSchema):
+        return request.param
+
+    return CreateMessageSchema(
+        id=get_faker.uuid4(),
+        ts=int(datetime.datetime.now().timestamp()),
+        text=get_faker.text(),
+    )
+
+
+@pytest.fixture(scope="session")
+def get_api() -> APIAggregator:
+    return APIAggregator()
+
+
+@pytest.fixture(scope="function")
+async def browser() -> Browser:
     async with async_playwright() as p:
-        browser = await getattr(p, browser_name).launch(headless=True)
-        context = await browser.new_context(record_video_dir="allure-results/videos/")
-        page = await context.new_page()
-
-        request.cls.driver = page
-        request.cls.context = context
-
-        yield page, context
-
-        if request.node.rep_call.failed:
-            await page.screenshot(path="allure-results/failure_screenshot.png")
-            allure.attach.file("allure-results/failure_screenshot.png",
-                               name="Итоговый скриншот",
-                               attachment_type=allure.attachment_type.PNG)
-
-            video_path = await page.video.path()
-            await context.close()
-            allure.attach.file(video_path,
-                               name="Видео с тестом",
-                               attachment_type=allure.attachment_type.WEBM)
-
-        await context.close()
+        browser = await p.chromium.launch(headless=True)
+        yield browser
         await browser.close()
+
+
+@pytest.fixture(scope="function")
+async def page(browser: Browser, request) -> Page:
+    context = await browser.new_context(record_video_dir="allure-results/videos/")
+    page = await context.new_page()
+    request.cls.page = page
+    yield page
+
+    await context.close()

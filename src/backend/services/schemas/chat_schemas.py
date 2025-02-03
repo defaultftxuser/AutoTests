@@ -1,31 +1,37 @@
 from typing import Optional
 
-from pydantic import BaseModel, RootModel
+from pydantic import BaseModel, RootModel, Field
 
 
 class CreateMessageResponseSchema(BaseModel):
     id: str
     ts: int
-    sessionId: str
+    session_id: str = Field(None, alias="sessionId")
     text: str
     sender: str
 
 
+class CreateMessageSchema(BaseModel):
+    id: str | None = None
+    ts: int | None = None
+    text: str | None = None
+
+
 class Payload(BaseModel):
-    queryId: Optional[str] = None
-    showTitle: Optional[str] = None
+    query_id: Optional[str] = Field(None, alias="queryId")
+    show_title: Optional[str] = Field(None, alias="showTitle")
     accuracy: Optional[str] = None
     files: Optional[str] = None
-    externalMessageId: Optional[str] = None
-    messageGroupId: Optional[str] = None
-    sessionId: Optional[str] = None
-    answerLevel: Optional[str] = None
-    documentId: Optional[str] = None
-    serviceId: Optional[str] = None
-    answeredBy: Optional[str] = None
+    external_message_id: Optional[str] = Field(None, alias="externalMessageId")
+    message_group_id: Optional[str] = Field(None, alias="messageGroupId")
+    session_id: str = Field(None, alias="sessionId")
+    answer_level: Optional[str] = Field(None, alias="answerLevel")
+    document_id: Optional[str] = Field(None, alias="documentId")
+    service_id: Optional[str] = Field(None, alias="serviceId")
+    answered_by: Optional[str] = Field(None, alias="answeredBy")
     application: Optional[str] = None
-    autofaqServiceTitle: Optional[str] = None
-    answerId: Optional[str] = None
+    auto_faq_service_title: Optional[str] = Field(None, alias="autofaqServiceTitle")
+    answer_id: Optional[str] = Field(None, alias="answerId")
     seen: Optional[str] = None
 
 
@@ -41,10 +47,10 @@ class Keyboard(BaseModel):
 class Message(BaseModel):
     id: str
     ts: int
-    sessionId: Optional[str] = None
+    session_id: str = Field(None, alias="sessionId")
     text: str
     sender: Optional[str] = None
-    replyToSender: Optional[str] = None
+    reply_to_sender: Optional[str] = Field(None, alias="replyToSender")
     payload: Optional[Payload] = None
     keyboard: Optional[Keyboard] = None
 
