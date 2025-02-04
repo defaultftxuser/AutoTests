@@ -6,5 +6,5 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./:/usr/workspace
-    command: /bin/sh -c "pytest --asyncio-mode=auto  --alluredir=allure-results -vs -n 4"
+    command: /bin/sh -c "pytest -n 4 --asyncio-mode=auto  --alluredir=allure-results -vs"
     working_dir: /usr/workspace
