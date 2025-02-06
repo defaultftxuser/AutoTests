@@ -1,6 +1,6 @@
 services:
   tests:
-    image: python:3.12.0a4-alpine3.17
+    image: python:3.12-bookworm
     build:
       context: .
       dockerfile: Dockerfile
